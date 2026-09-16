@@ -44,10 +44,7 @@ export function ChatAssistant({ locale }: { locale: Locale }) {
           ...m,
           {
             role: "assistant",
-            text:
-              locale === "de"
-                ? "Kurz offline — bitte gleich nochmal versuchen."
-                : "Briefly offline — please try again.",
+            text: t(locale, "assistant_offline"),
           },
         ]);
         return;
@@ -79,15 +76,11 @@ export function ChatAssistant({ locale }: { locale: Locale }) {
         <div className="fixed bottom-20 right-5 z-50 flex h-[min(70vh,520px)] w-[min(92vw,380px)] flex-col overflow-hidden border-2 border-ink bg-paper shadow-[6px_6px_0_#0A0A0A]">
           <div className="border-b-2 border-ink bg-yellow px-4 py-3">
             <p className="font-extrabold uppercase">{brand.assistantName}</p>
-            <p className="text-xs text-ink/70">Real catalog · no invented prices</p>
+            <p className="text-xs text-ink/70">{t(locale, "assistant_catalog_note")}</p>
           </div>
           <div className="flex-1 space-y-3 overflow-y-auto p-4">
             {messages.length === 0 && (
-              <p className="text-sm text-muted">
-                {locale === "de"
-                  ? "Beispiel: „Geschenk für 12 unter 25 €“"
-                  : "Try: “gift for 12 under €25”"}
-              </p>
+              <p className="text-sm text-muted">{t(locale, "assistant_hint")}</p>
             )}
             {messages.map((m, i) => (
               <div key={i} className={m.role === "user" ? "text-right" : ""}>

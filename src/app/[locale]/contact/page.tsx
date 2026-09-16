@@ -20,7 +20,9 @@ export default async function ContactPage({
 
       <div className="mt-10 grid gap-4 sm:grid-cols-3">
         <a href={`mailto:${brand.infoEmail}`} className="border-2 border-ink bg-yellow p-5 transition hover:shadow-[4px_4px_0_#0A0A0A]">
-          <p className="text-xs font-extrabold uppercase text-muted">Info</p>
+          <p className="text-xs font-extrabold uppercase text-muted">
+            {t(locale, "contact_info_label")}
+          </p>
           <p className="mt-2 break-all text-sm font-extrabold">{brand.infoEmail}</p>
         </a>
         <a href={`mailto:${brand.ordersEmail}`} className="border-2 border-ink bg-fog p-5 transition hover:bg-yellow">

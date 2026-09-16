@@ -54,7 +54,7 @@ export default async function ShopPage({
     <main className="mx-auto max-w-7xl px-4 py-12 md:px-6">
       <h1 className="display text-5xl font-extrabold uppercase md:text-6xl">{title}</h1>
       <p className="mt-3 text-muted">
-        {products.length} {locale === "de" ? "Produkte" : "products"}
+        {t(locale, "products_count", { n: products.length })}
       </p>
 
       <div className="mt-6 flex flex-wrap gap-2">

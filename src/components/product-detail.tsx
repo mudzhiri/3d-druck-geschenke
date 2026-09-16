@@ -6,6 +6,7 @@ import type { CatalogProduct } from "@/lib/types";
 import { pickLocalized, type Locale } from "@/lib/brand";
 import { formatMoney } from "@/lib/utils";
 import { t } from "@/lib/i18n";
+import { localizedProductName } from "@/lib/product-i18n";
 import { useCart } from "@/lib/cart";
 import { track } from "@/lib/analytics";
 import { stores } from "@/lib/catalog";
@@ -34,9 +35,15 @@ export function ProductDetail({
     (variant?.price_cents ?? 0) +
     (personalized ? variant?.personalization_price_cents ?? 0 : 0);
 
-  const title = pickLocalized(product.name, locale);
+  const title = localizedProductName(product.slug, product.name, locale);
   const description = pickLocalized(product.description, locale);
   const why = pickLocalized(product.why, locale);
+  const dropLabel =
+    product.drop_label === "LIMITED"
+      ? t(locale, "limited")
+      : product.drop_label === "NEW DROP"
+        ? t(locale, "badge_new_drop")
+        : product.drop_label;
 
   return (
     <div className="mx-auto grid max-w-7xl gap-10 px-4 py-10 md:grid-cols-2 md:px-6 md:py-16">
@@ -57,9 +64,9 @@ export function ProductDetail({
       </div>
 
       <div>
-        {product.drop_label && (
+        {dropLabel && (
           <p className="mb-2 text-xs font-extrabold tracking-[0.18em] text-ink">
-            {product.drop_label}
+            {dropLabel}
             {product.limited_units
               ? ` · ${t(locale, "only_made", { n: product.limited_units })}`
               : ""}
@@ -76,13 +83,15 @@ export function ProductDetail({
               href={`/stl/${product.production.stl_master_sku}_MASTER_v1.stl`}
               download
             >
-              Download
+              {t(locale, "label_download")}
             </a>
           </p>
         )}
 
         <div className="mt-8">
-          <p className="mb-3 text-sm font-extrabold uppercase tracking-wide text-muted">Color</p>
+          <p className="mb-3 text-sm font-extrabold uppercase tracking-wide text-muted">
+            {t(locale, "label_color")}
+          </p>
           <div className="flex flex-wrap gap-3">
             {product.variants.map((v) => (
               <button
@@ -106,7 +115,7 @@ export function ProductDetail({
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value.slice(0, 12))}
-                placeholder="Name"
+                placeholder={t(locale, "label_name")}
                 className="focus-ring w-full rounded-md border-2 border-ink bg-paper px-3 py-2"
               />
             )}
@@ -114,7 +123,7 @@ export function ProductDetail({
               <input
                 value={initials}
                 onChange={(e) => setInitials(e.target.value.slice(0, 3).toUpperCase())}
-                placeholder="Initials"
+                placeholder={t(locale, "label_initials")}
                 className="focus-ring w-full rounded-md border-2 border-ink bg-paper px-3 py-2"
               />
             )}
@@ -122,7 +131,7 @@ export function ProductDetail({
               <input
                 value={text}
                 onChange={(e) => setText(e.target.value.slice(0, 20))}
-                placeholder="Text"
+                placeholder={t(locale, "label_text")}
                 className="focus-ring w-full rounded-md border-2 border-ink bg-paper px-3 py-2"
               />
             )}
@@ -133,7 +142,9 @@ export function ProductDetail({
         )}
 
         <div className="mt-6 flex items-center gap-3">
-          <label className="text-sm font-extrabold uppercase text-muted">Qty</label>
+          <label className="text-sm font-extrabold uppercase text-muted">
+            {t(locale, "label_qty")}
+          </label>
           <input
             type="number"
             min={1}
@@ -146,8 +157,8 @@ export function ProductDetail({
 
         <p className="mt-4 text-sm text-muted">
           {variant?.mode === "PRINT_ON_DEMAND"
-            ? `Print on demand · ~${product.production.estimated_print_minutes} min`
-            : `In stock · ${variant?.available_stock ?? 0}`}
+            ? t(locale, "stock_pod", { n: product.production.estimated_print_minutes })
+            : t(locale, "stock_instock", { n: variant?.available_stock ?? 0 })}
         </p>
 
         <button
@@ -168,34 +179,64 @@ export function ProductDetail({
           {product.for_sale ? t(locale, "cta_add") : t(locale, "draft_badge")}
         </button>
 
-        <p className="mt-3 text-xs text-muted">
-          Apple Pay · Google Pay · PayPal · Card — via Stripe Checkout when enabled.
-        </p>
+        <p className="mt-3 text-xs text-muted">{t(locale, "payment_hint")}</p>
 
         <div className="mt-10 space-y-6 border-t-2 border-ink pt-8 text-sm">
           <div>
-            <h2 className="font-extrabold uppercase">{description ? "Info" : "Info"}</h2>
+            <h2 className="font-extrabold uppercase">{t(locale, "label_info")}</h2>
             <p className="mt-1 text-ink/70">{description}</p>
           </div>
           <div>
-            <h2 className="font-extrabold uppercase">Why</h2>
+            <h2 className="font-extrabold uppercase">{t(locale, "label_why")}</h2>
             <p className="mt-1 text-ink/70">{why}</p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
-            <p><span className="text-muted">Size</span><br />{product.dimensions}</p>
-            <p><span className="text-muted">Material</span><br />{product.production.material}</p>
-            <p><span className="text-muted">Finish</span><br />{product.finish}</p>
-            <p><span className="text-muted">Weight</span><br />{product.weight_g} g</p>
-            <p><span className="text-muted">Care</span><br />{pickLocalized(product.care, locale)}</p>
-            <p><span className="text-muted">Included</span><br />{pickLocalized(product.included, locale)}</p>
-            <p><span className="text-muted">Production</span><br />{product.production.estimated_print_minutes} min</p>
-            <p><span className="text-muted">Class</span><br />{product.compliance.product_class}</p>
+            <p>
+              <span className="text-muted">{t(locale, "label_size")}</span>
+              <br />
+              {product.dimensions}
+            </p>
+            <p>
+              <span className="text-muted">{t(locale, "label_material")}</span>
+              <br />
+              {product.production.material}
+            </p>
+            <p>
+              <span className="text-muted">{t(locale, "label_finish")}</span>
+              <br />
+              {product.finish}
+            </p>
+            <p>
+              <span className="text-muted">{t(locale, "label_weight")}</span>
+              <br />
+              {product.weight_g} g
+            </p>
+            <p>
+              <span className="text-muted">{t(locale, "label_care")}</span>
+              <br />
+              {pickLocalized(product.care, locale)}
+            </p>
+            <p>
+              <span className="text-muted">{t(locale, "label_included")}</span>
+              <br />
+              {pickLocalized(product.included, locale)}
+            </p>
+            <p>
+              <span className="text-muted">{t(locale, "label_production")}</span>
+              <br />
+              {product.production.estimated_print_minutes} min
+            </p>
+            <p>
+              <span className="text-muted">{t(locale, "label_class")}</span>
+              <br />
+              {product.compliance.product_class}
+            </p>
           </div>
           <p className="text-ink/70">{t(locale, "production_note")}</p>
           <div>
             <h2 className="font-extrabold uppercase">{t(locale, "find_in_store")}</h2>
             <p className="mt-1 text-muted">
-              {stores[0]?.name} · {stores[0]?.city} · Stock: Unknown (until retail sync)
+              {stores[0]?.name} · {stores[0]?.city} · {t(locale, "stock_unknown")}
             </p>
           </div>
         </div>

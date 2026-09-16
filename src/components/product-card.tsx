@@ -4,8 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import type { CatalogProduct } from "@/lib/types";
-import { pickLocalized, type Locale } from "@/lib/brand";
+import { type Locale } from "@/lib/brand";
 import { formatMoney } from "@/lib/utils";
+import { localizedProductName } from "@/lib/product-i18n";
 import { t } from "@/lib/i18n";
 
 export function ProductCard({
@@ -16,7 +17,7 @@ export function ProductCard({
   locale: Locale;
 }) {
   const price = product.variants[0]?.price_cents ?? 0;
-  const name = pickLocalized(product.name, locale);
+  const name = localizedProductName(product.slug, product.name, locale);
   const moneyLocale =
     locale === "de"
       ? "de-DE"
@@ -29,6 +30,12 @@ export function ProductCard({
             : locale === "zh"
               ? "zh-CN"
               : "en-GB";
+  const dropLabel =
+    product.drop_label === "LIMITED"
+      ? t(locale, "limited")
+      : product.drop_label === "NEW DROP"
+        ? t(locale, "badge_new_drop")
+        : null;
 
   return (
     <Link href={`/${locale}/product/${product.slug}`} className="group block min-w-[240px] snap-start">
@@ -46,9 +53,9 @@ export function ProductCard({
             sizes="(max-width:768px) 70vw, 280px"
           />
         </div>
-        {product.drop_label && (
+        {dropLabel && (
           <span className="absolute left-3 top-3 bg-yellow px-2 py-1 text-[10px] font-extrabold tracking-wide text-ink">
-            {product.drop_label}
+            {dropLabel}
           </span>
         )}
         {!product.for_sale && (

@@ -5,8 +5,9 @@ import { useParams } from "next/navigation";
 import { useCart } from "@/lib/cart";
 import { catalog } from "@/lib/catalog";
 import { formatMoney } from "@/lib/utils";
+import { localizedProductName } from "@/lib/product-i18n";
 import { t } from "@/lib/i18n";
-import { pickLocalized, type Locale } from "@/lib/brand";
+import { type Locale } from "@/lib/brand";
 import { track } from "@/lib/analytics";
 
 export default function CartPage() {
@@ -41,7 +42,9 @@ export default function CartPage() {
               <li key={item.key} className="border-2 border-ink bg-fog p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="font-extrabold uppercase">{pickLocalized(product.name, locale)}</p>
+                    <p className="font-extrabold uppercase">
+                      {localizedProductName(product.slug, product.name, locale)}
+                    </p>
                     <p className="text-sm text-muted">
                       {variant.color.color_name}
                       {personalized
@@ -61,7 +64,7 @@ export default function CartPage() {
                         className="text-sm font-extrabold uppercase underline"
                         onClick={() => removeItem(item.key)}
                       >
-                        Remove
+                        {t(locale, "remove")}
                       </button>
                     </div>
                   </div>
@@ -75,7 +78,7 @@ export default function CartPage() {
 
       {upsell.length > 0 && items.length > 0 && (
         <div className="mt-10">
-          <h2 className="display text-2xl font-black">Complete your setup</h2>
+          <h2 className="display text-2xl font-black">{t(locale, "cart_upsell")}</h2>
           <div className="mt-3 space-y-2">
             {upsell.map((p) => (
               <Link
@@ -83,7 +86,7 @@ export default function CartPage() {
                 href={`/${locale}/product/${p.slug}`}
                 className="block font-extrabold uppercase underline"
               >
-                {pickLocalized(p.name, locale)} — {formatMoney(p.variants[0].price_cents)}
+                {localizedProductName(p.slug, p.name, locale)} — {formatMoney(p.variants[0].price_cents)}
               </Link>
             ))}
           </div>

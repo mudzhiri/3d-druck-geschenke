@@ -77,7 +77,7 @@ export function ShopMegaMenu({ locale }: { locale: Locale }) {
               className="text-sm font-extrabold uppercase underline"
               onClick={() => setOpen(false)}
             >
-              {t(locale, "nav_custom")} → STL Personalisierung
+              {t(locale, "shop_mega_custom")}
             </Link>
           </div>
         </div>

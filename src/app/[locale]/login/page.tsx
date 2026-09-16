@@ -41,7 +41,7 @@ export default async function LoginPage({
 
       <div className="my-8 flex items-center gap-3 text-xs font-extrabold uppercase tracking-wide text-muted">
         <span className="h-px flex-1 bg-ink/20" />
-        Magic Link
+        {t(locale, "auth_magic_divider")}
         <span className="h-px flex-1 bg-ink/20" />
       </div>
 

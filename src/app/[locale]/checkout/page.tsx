@@ -6,7 +6,9 @@ import { useCart } from "@/lib/cart";
 import { catalog } from "@/lib/catalog";
 import { formatMoney } from "@/lib/utils";
 import type { Locale } from "@/lib/brand";
+import { pickLocalized } from "@/lib/brand";
 import { track } from "@/lib/analytics";
+import { t } from "@/lib/i18n";
 
 export default function CheckoutPage() {
   const params = useParams<{ locale: string }>();
@@ -36,7 +38,7 @@ export default function CheckoutPage() {
             return {
               productId: item.productId,
               variantId: item.variantId,
-              title: product.name.en,
+              title: pickLocalized(product.name, locale),
               qty: item.quantity,
               personalization: item.personalization,
               mode: variant.mode,
@@ -53,7 +55,7 @@ export default function CheckoutPage() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Checkout failed");
+      if (!res.ok) throw new Error(data.error || t(locale, "checkout_failed"));
       track("purchase", { orderId: data.orderId, value: subtotalCents });
       clear();
       if (data.url) {
@@ -62,7 +64,7 @@ export default function CheckoutPage() {
         router.push(`/${locale}/checkout/success?order=${data.orderId}`);
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Checkout failed");
+      setError(e instanceof Error ? e.message : t(locale, "checkout_failed"));
     } finally {
       setLoading(false);
     }
@@ -71,23 +73,21 @@ export default function CheckoutPage() {
   if (!items.length) {
     return (
       <main className="mx-auto max-w-lg px-4 py-16">
-        <p className="text-muted">Cart is empty.</p>
+        <p className="text-muted">{t(locale, "empty_cart")}</p>
       </main>
     );
   }
 
   return (
     <main className="mx-auto max-w-lg px-4 py-12 md:px-6">
-      <h1 className="display text-5xl font-extrabold">Checkout</h1>
-      <p className="mt-2 text-muted">
-        Stripe Checkout when keys are set — otherwise demo order + production job.
-      </p>
+      <h1 className="display text-5xl font-extrabold">{t(locale, "checkout_title")}</h1>
+      <p className="mt-2 text-muted">{t(locale, "checkout_intro")}</p>
       <div className="mt-8 space-y-3">
         <input
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Name"
+          placeholder={t(locale, "label_name")}
           className="focus-ring w-full rounded-md border-2 border-ink bg-paper px-3 py-3"
         />
         <input
@@ -95,7 +95,7 @@ export default function CheckoutPage() {
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
+          placeholder={t(locale, "label_email")}
           className="focus-ring w-full rounded-md border-2 border-ink bg-paper px-3 py-3"
         />
       </div>
@@ -107,11 +107,9 @@ export default function CheckoutPage() {
         onClick={() => void pay()}
         className="btn-feast focus-ring mt-6 w-full px-6 py-4 text-sm disabled:opacity-40"
       >
-        {loading ? "…" : "Pay"}
+        {loading ? "…" : t(locale, "checkout_pay")}
       </button>
-      <p className="mt-3 text-xs text-muted">
-        Guest checkout OK · Apple Pay / Google Pay / PayPal / Cards via Stripe
-      </p>
+      <p className="mt-3 text-xs text-muted">{t(locale, "checkout_guest_hint")}</p>
     </main>
   );
 }

@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { brand, pickLocalized, type Locale } from "@/lib/brand";
 import { t } from "@/lib/i18n";
 import { getPublicProducts } from "@/lib/catalog";
+import { vibeLabels } from "@/lib/product-i18n";
 import { ProductCard } from "./product-card";
 
 const vibes = ["PLAY", "DESK", "ROOM", "GAMING", "GIFTS", "CUSTOM"] as const;
@@ -127,7 +128,9 @@ export function HomePage({ locale }: { locale: Locale }) {
               href={`/${locale}/shop/${v.toLowerCase()}`}
               className="focus-ring group border-2 border-ink bg-paper px-5 py-10 transition hover:bg-yellow"
             >
-              <span className="display text-3xl font-black md:text-4xl">{v}</span>
+              <span className="display text-3xl font-black md:text-4xl">
+                {vibeLabels[v][locale]}
+              </span>
             </Link>
           ))}
         </div>
@@ -156,9 +159,16 @@ export function HomePage({ locale }: { locale: Locale }) {
             <p className="mt-4 text-ink/75">{t(locale, "section_bts_body")}</p>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            {["Design", "Print", "Finish", "Pack"].map((step) => (
-              <div key={step} className="border-2 border-ink bg-fog p-6">
-                <p className="display text-2xl font-black">{step}</p>
+            {(
+              [
+                "bts_step_design",
+                "bts_step_print",
+                "bts_step_finish",
+                "bts_step_pack",
+              ] as const
+            ).map((key) => (
+              <div key={key} className="border-2 border-ink bg-fog p-6">
+                <p className="display text-2xl font-black">{t(locale, key)}</p>
               </div>
             ))}
           </div>
