@@ -1331,13 +1331,21 @@ const baseKeys = {
     it: "Scorte live nascoste finché il sync retail non è affidabile.",
     zh: "门店同步可靠前暂不显示实时库存。",
   },
-  stores_map_placeholder: {
-    de: "Karten-Platzhalter — Mapbox/Google, sobald API-Key freigegeben.",
-    en: "Map placeholder — wire Mapbox/Google when API key approved.",
-    fr: "Placeholder carte — Mapbox/Google quand la clé API est OK.",
-    es: "Mapa placeholder — Mapbox/Google cuando haya API key.",
-    it: "Placeholder mappa — Mapbox/Google quando la API key è OK.",
-    zh: "地图占位 — API 密钥就绪后接入 Mapbox/Google。",
+  auth_social_soon: {
+    de: "Social Login folgt — jetzt mit E-Mail & Passwort anmelden oder Konto erstellen.",
+    en: "Social login coming soon — sign in or register with email & password for now.",
+    fr: "Social login bientôt — utilise e-mail & mot de passe pour l’instant.",
+    es: "Login social pronto — usa email y contraseña por ahora.",
+    it: "Social login in arrivo — usa email e password per ora.",
+    zh: "社交登录即将上线 — 请先用邮箱和密码登录或注册。",
+  },
+  auth_password_first: {
+    de: "Mit E-Mail & Passwort",
+    en: "With email & password",
+    fr: "Avec e-mail & mot de passe",
+    es: "Con email y contraseña",
+    it: "Con email e password",
+    zh: "使用邮箱和密码",
   },
 } as const;
 

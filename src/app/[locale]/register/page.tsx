@@ -26,8 +26,11 @@ export default async function RegisterPage({
         <p className="mt-6 border-2 border-ink bg-yellow p-3 text-sm font-medium">{error}</p>
       )}
 
-      <div className="mt-8">
-        <SocialLoginButtons locale={locale} next={next} />
+      <p className="mt-8 text-xs font-extrabold uppercase tracking-wide text-muted">
+        {t(locale, "auth_password_first")}
+      </p>
+      <div className="mt-3">
+        <RegisterForm locale={locale} next={next} />
       </div>
 
       <div className="my-8 flex items-center gap-3 text-xs font-extrabold uppercase tracking-wide text-muted">
@@ -36,7 +39,7 @@ export default async function RegisterPage({
         <span className="h-px flex-1 bg-ink/20" />
       </div>
 
-      <RegisterForm locale={locale} next={next} />
+      <SocialLoginButtons locale={locale} next={next} />
 
       <p className="mt-8 text-center text-sm text-muted">
         <Link href={`/${locale}/login`} className="font-extrabold uppercase underline">

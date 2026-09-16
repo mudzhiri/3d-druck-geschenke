@@ -1,13 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
 import {
-  authCallbackUrl,
   socialProviders,
   type SocialProvider,
 } from "@/lib/auth/providers";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 import type { Locale } from "@/lib/brand";
 import { t } from "@/lib/i18n";
 
@@ -34,44 +32,53 @@ export function SocialLoginButtons({
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const configured = useMemo(() => isSupabaseConfigured(), []);
+  const safeNext = next.startsWith("/") ? next : `/${locale}/account`;
 
-  async function startNative(provider: SocialProvider) {
+  // Custom providers only if server env keys exist (exposed via optional public flags)
+  const providers = useMemo(() => {
+    return socialProviders.filter((p) => {
+      if (p.kind === "custom") {
+        // Client cannot read secrets — show only when public flag set
+        if (p.id === "tiktok") return process.env.NEXT_PUBLIC_AUTH_TIKTOK === "true";
+        if (p.id === "instagram") return process.env.NEXT_PUBLIC_AUTH_INSTAGRAM === "true";
+        return false;
+      }
+      // Only show providers that are explicitly enabled (avoids broken OAuth buttons)
+      if (p.id === "google") return process.env.NEXT_PUBLIC_AUTH_GOOGLE === "true";
+      if (p.id === "facebook") return process.env.NEXT_PUBLIC_AUTH_FACEBOOK === "true";
+      if (p.id === "azure") return process.env.NEXT_PUBLIC_AUTH_MICROSOFT === "true";
+      return false;
+    });
+  }, []);
+
+  function startNative(provider: SocialProvider) {
     if (!provider.supabase) return;
     setLoading(provider.id);
     setError(null);
-    try {
-      if (!configured) throw new Error("Supabase is not configured");
-      const supabase = createClient();
-      const redirectTo = authCallbackUrl(window.location.origin, next);
-      const { data, error: authError } = await supabase.auth.signInWithOAuth({
-        provider: provider.supabase,
-        options: {
-          redirectTo,
-          skipBrowserRedirect: true,
-          queryParams:
-            provider.supabase === "google"
-              ? { access_type: "offline", prompt: "select_account" }
-              : provider.supabase === "azure"
-                ? { prompt: "select_account" }
-                : undefined,
-        },
-      });
-      if (authError) throw authError;
-      if (!data.url) throw new Error("No OAuth URL returned");
-      window.location.assign(data.url);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setError(mapAuthError(msg, locale));
+    if (!configured) {
+      setError(t(locale, "auth_supabase_missing"));
       setLoading(null);
+      return;
     }
+    // Server preflight → clean error redirect if provider disabled
+    window.location.assign(
+      `/api/auth/oauth/start?provider=${provider.supabase}&next=${encodeURIComponent(safeNext)}&locale=${locale}`,
+    );
   }
 
   function startCustom(provider: SocialProvider) {
     setLoading(provider.id);
     setError(null);
-    const safeNext = next.startsWith("/") ? next : `/${locale}/account`;
     window.location.assign(
       `/api/auth/${provider.id}/start?next=${encodeURIComponent(safeNext)}&locale=${locale}`,
+    );
+  }
+
+  if (!providers.length) {
+    return (
+      <p className="border-2 border-ink bg-fog p-3 text-sm text-ink/80">
+        {t(locale, "auth_social_soon")}
+      </p>
     );
   }
 
@@ -83,7 +90,7 @@ export function SocialLoginButtons({
         </p>
       )}
       <div className="grid gap-2">
-        {socialProviders.map((p) => (
+        {providers.map((p) => (
           <button
             key={p.id}
             type="button"
@@ -105,7 +112,9 @@ export function SocialLoginButtons({
         ))}
       </div>
       {error && (
-        <p className="border-2 border-ink bg-fog p-3 text-sm text-ink/80">{error}</p>
+        <p className="border-2 border-ink bg-fog p-3 text-sm text-ink/80">
+          {mapAuthError(error, locale)}
+        </p>
       )}
     </div>
   );

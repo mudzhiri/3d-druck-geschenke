@@ -2,8 +2,8 @@ import Link from "next/link";
 import type { Locale } from "@/lib/brand";
 import { t } from "@/lib/i18n";
 import { SocialLoginButtons } from "@/components/auth/social-login";
-import { MagicLinkForm } from "@/components/auth/magic-link-form";
 import { PasswordLoginForm } from "@/components/auth/password-forms";
+import { MagicLinkForm } from "@/components/auth/magic-link-form";
 
 export default async function LoginPage({
   params,
@@ -27,8 +27,11 @@ export default async function LoginPage({
         <p className="mt-6 border-2 border-ink bg-yellow p-3 text-sm font-medium">{error}</p>
       )}
 
-      <div className="mt-8">
-        <SocialLoginButtons locale={locale} next={next} />
+      <p className="mt-8 text-xs font-extrabold uppercase tracking-wide text-muted">
+        {t(locale, "auth_password_first")}
+      </p>
+      <div className="mt-3">
+        <PasswordLoginForm locale={locale} next={next} />
       </div>
 
       <div className="my-8 flex items-center gap-3 text-xs font-extrabold uppercase tracking-wide text-muted">
@@ -37,7 +40,7 @@ export default async function LoginPage({
         <span className="h-px flex-1 bg-ink/20" />
       </div>
 
-      <PasswordLoginForm locale={locale} next={next} />
+      <SocialLoginButtons locale={locale} next={next} />
 
       <div className="my-8 flex items-center gap-3 text-xs font-extrabold uppercase tracking-wide text-muted">
         <span className="h-px flex-1 bg-ink/20" />

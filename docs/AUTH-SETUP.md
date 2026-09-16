@@ -43,9 +43,23 @@ Site URL: `https://www.3d-druck-geschenke.de`
 
 ## Enable native providers
 
-1. **Google** — Google Cloud Console OAuth client → Client ID/Secret into Supabase Google provider. Redirect: `https://buuxsezmgyoeojmihoso.supabase.co/auth/v1/callback`
-2. **Facebook** — Meta Developer App → Facebook Login → same Supabase callback
-3. **Microsoft** — Azure Portal App registration → Supabase Azure provider (tenant optional)
+Social buttons appear **only** when the matching env flag is `true` on Vercel:
+
+```
+NEXT_PUBLIC_AUTH_GOOGLE=true
+NEXT_PUBLIC_AUTH_FACEBOOK=true
+NEXT_PUBLIC_AUTH_MICROSOFT=true
+NEXT_PUBLIC_AUTH_TIKTOK=true
+NEXT_PUBLIC_AUTH_INSTAGRAM=true
+```
+
+Until then, **E-Mail + Passwort** is the working path (shown first on login/register).
+
+1. **Google** — Google Cloud Console OAuth client → Client ID/Secret into Supabase Google provider. Redirect: `https://buuxsezmgyoeojmihoso.supabase.co/auth/v1/callback` → set `NEXT_PUBLIC_AUTH_GOOGLE=true` + redeploy
+2. **Facebook** — Meta Developer App → Facebook Login → same Supabase callback → `NEXT_PUBLIC_AUTH_FACEBOOK=true`
+3. **Microsoft** — Azure Portal App registration → Supabase Azure provider → `NEXT_PUBLIC_AUTH_MICROSOFT=true`
+
+OAuth start goes through `/api/auth/oauth/start` (preflight). Disabled providers redirect back to login with a clear error instead of raw JSON.
 
 ## TikTok
 
