@@ -24,11 +24,13 @@ export function ProductDetail({
   const [name, setName] = useState("");
   const [initials, setInitials] = useState("");
   const [text, setText] = useState("");
+  const [imageIndex, setImageIndex] = useState(0);
 
   const variant = useMemo(
     () => product.variants.find((v) => v.id === variantId) ?? product.variants[0],
     [product.variants, variantId],
   );
+  const activeImage = product.images[imageIndex] ?? product.images[0];
 
   const personalized = Boolean(name || initials || text);
   const unit =
@@ -47,19 +49,37 @@ export function ProductDetail({
 
   return (
     <div className="mx-auto grid max-w-7xl gap-10 px-4 py-10 md:grid-cols-2 md:px-6 md:py-16">
-      <div className="relative aspect-square overflow-hidden border-2 border-ink bg-fog">
-        <Image
-          src={product.images[0]}
-          alt={title}
-          fill
-          unoptimized
-          className="object-cover"
-          priority
-        />
-        {!product.for_sale && (
-          <span className="absolute left-4 top-4 bg-ink px-3 py-1 text-xs font-extrabold text-yellow">
-            {t(locale, "draft_badge")}
-          </span>
+      <div>
+        <div className="relative aspect-square overflow-hidden border-2 border-ink bg-fog">
+          <Image
+            src={activeImage}
+            alt={title}
+            fill
+            unoptimized
+            className="object-cover"
+            priority
+          />
+          {!product.for_sale && (
+            <span className="absolute left-4 top-4 bg-ink px-3 py-1 text-xs font-extrabold text-yellow">
+              {t(locale, "draft_badge")}
+            </span>
+          )}
+        </div>
+        {product.images.length > 1 && (
+          <div className="mt-3 flex gap-2">
+            {product.images.map((src, i) => (
+              <button
+                key={src}
+                type="button"
+                aria-label={`${title} ${i + 1}`}
+                onClick={() => setImageIndex(i)}
+                className="relative h-20 w-20 overflow-hidden border-2 border-ink bg-fog focus-ring data-[active=true]:ring-2 data-[active=true]:ring-ink"
+                data-active={i === imageIndex}
+              >
+                <Image src={src} alt="" fill unoptimized className="object-cover" />
+              </button>
+            ))}
+          </div>
         )}
       </div>
 

@@ -39,10 +39,13 @@ type Seed = {
   colorCode: string;
   material?: string;
   mode?: "IN_STOCK" | "PRINT_ON_DEMAND";
+  images?: string[];
+  included?: { de: string; en: string };
 };
 
 function seedToProduct(s: Seed): CatalogProduct {
   const stock = s.mode === "IN_STOCK" ? 18 : 0;
+  const skuImg = `/products/${s.sku.toLowerCase()}.png`;
   return {
     id: s.id,
     slug: s.slug,
@@ -59,14 +62,14 @@ function seedToProduct(s: Seed): CatalogProduct {
     limited_units: s.drop === "LIMITED" ? 80 : null,
     personalizable: s.personalizable,
     personalization_fields: s.fields,
-    images: [`/products/${s.sku.toLowerCase()}.png`],
+    images: s.images?.length ? s.images : [skuImg],
     dimensions: s.dims,
     weight_g: s.weight_g,
     care: {
       de: "Trocken halten. Innenbereich. Nicht spülen.",
       en: "Keep dry. Indoor use. Do not dishwasher.",
     },
-    included: {
+    included: s.included ?? {
       de: `1× ${s.name.de}`,
       en: `1× ${s.name.en}`,
     },
@@ -114,7 +117,7 @@ function seedToProduct(s: Seed): CatalogProduct {
         size: "M",
         color: {
           id: "c-ink",
-          color_name: "Ink",
+          color_name: "Ink / Yellow",
           hex: "#0B0B0F",
           filament_sku: "FIL-PLA-INK-01",
           printer_profile: "pla-standard-0.2",
@@ -127,6 +130,67 @@ function seedToProduct(s: Seed): CatalogProduct {
         safety_stock: 5,
         mode: "PRINT_ON_DEMAND",
       },
+      ...(s.slug === "name-keychain"
+        ? [
+            {
+              id: `v-${s.id}-yel`,
+              master_sku: `${s.sku}-YEL-M`,
+              size: "M" as const,
+              color: {
+                id: "c-yel-key",
+                color_name: "Feast Yellow / Ink",
+                hex: "#FFE600",
+                filament_sku: "FIL-PLA-YEL-01",
+                printer_profile: "pla-standard-0.2",
+                stock_material: "PLA",
+              },
+              price_cents: s.price,
+              personalization_price_cents: s.persoPrice,
+              available_stock: stock,
+              production_capacity: 40,
+              safety_stock: 5,
+              mode: (s.mode || "PRINT_ON_DEMAND") as "IN_STOCK" | "PRINT_ON_DEMAND",
+            },
+            {
+              id: `v-${s.id}-cor`,
+              master_sku: `${s.sku}-COR-M`,
+              size: "M" as const,
+              color: {
+                id: "c-cor-key",
+                color_name: "Coral / White",
+                hex: "#FF5A3C",
+                filament_sku: "FIL-PLA-COR-01",
+                printer_profile: "pla-standard-0.2",
+                stock_material: "PLA",
+              },
+              price_cents: s.price,
+              personalization_price_cents: s.persoPrice,
+              available_stock: stock,
+              production_capacity: 40,
+              safety_stock: 5,
+              mode: (s.mode || "PRINT_ON_DEMAND") as "IN_STOCK" | "PRINT_ON_DEMAND",
+            },
+            {
+              id: `v-${s.id}-tea`,
+              master_sku: `${s.sku}-TEA-M`,
+              size: "M" as const,
+              color: {
+                id: "c-tea-key",
+                color_name: "Teal / White",
+                hex: "#1F8A7A",
+                filament_sku: "FIL-PLA-TEA-01",
+                printer_profile: "pla-standard-0.2",
+                stock_material: "PLA",
+              },
+              price_cents: s.price,
+              personalization_price_cents: s.persoPrice,
+              available_stock: stock,
+              production_capacity: 40,
+              safety_stock: 5,
+              mode: (s.mode || "PRINT_ON_DEMAND") as "IN_STOCK" | "PRINT_ON_DEMAND",
+            },
+          ]
+        : []),
     ],
     for_sale: true,
   };
@@ -144,24 +208,32 @@ const seeds: Seed[] = [
     vibes: ["GIFTS", "CUSTOM", "PLAY"],
     name: { de: "Name Schlüsselanhänger", en: "Name Keychain" },
     description: {
-      de: "Personalisierter Anhänger mit Namen — Bestseller für Kids, Partys & Alltag.",
-      en: "Personalized name keychain — bestseller for kids, parties & everyday.",
+      de: "Bubble-Name mit Kontrastfarbe: dein Name als robuster 3D-Druck-Anhänger inkl. Metallring — für Schlüsselbund, Rucksack oder Koffer. Persönliches Geschenk in Minuten.",
+      en: "Bubble-name with high contrast: your name as a sturdy 3D-printed tag with metal ring — for keys, backpack or luggage. A personal gift in minutes.",
     },
-    why: { de: "Klein, günstig, sofort persönlich.", en: "Small, affordable, instantly personal." },
+    why: {
+      de: "Zweifarbig, klar lesbar, sofort persönlich — der Alltags-Bestseller.",
+      en: "Two-tone, easy to read, instantly personal — everyday bestseller.",
+    },
     fields: ["name", "color"],
     personalizable: true,
-    dims: "40 × 18 × 4 mm",
-    weight_g: 8,
-    grams: 7,
-    minutes: 28,
+    dims: "ca. 45–70 × 22 × 5 mm (je nach Name)",
+    weight_g: 10,
+    grams: 8,
+    minutes: 32,
     price: 1290,
     persoPrice: 0,
     product_class: "ACCESSORY",
     drop: "NEW DROP",
-    hex: "#FFE600",
-    colorName: "Feast Yellow",
-    colorCode: "YEL",
+    hex: "#6B2D9B",
+    colorName: "Violet / White",
+    colorCode: "VIO",
     mode: "IN_STOCK",
+    images: ["/products/pl-name-key.png", "/products/pl-name-key-2.png"],
+    included: {
+      de: "1× personalisierter Name-Anhänger + 1× Metall-Splitring (25 mm)",
+      en: "1× personalized name tag + 1× metal split ring (25 mm)",
+    },
   },
   {
     id: "p-bag-tag",
