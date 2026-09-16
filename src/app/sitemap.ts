@@ -16,6 +16,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/faq",
     "/blog",
     "/login",
+    "/register",
     "/account",
     ...legalSlugs.map((s) => `/legal/${s}`),
   ];

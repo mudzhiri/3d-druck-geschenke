@@ -1,77 +1,127 @@
-import { Resend } from "resend";
-import { brand } from "../brand";
+import { brand } from "@/lib/brand";
+import { sendEmail } from "@/lib/email/send";
+import {
+  buildMailTemplate,
+  type MailLocale,
+  type MailTemplateId,
+} from "@/lib/email/templates";
+import { formatMoney } from "@/lib/utils";
 
-export type MailTemplate =
-  | "order_confirmation"
-  | "payment_confirmation"
-  | "production_started"
-  | "order_ready"
-  | "shipped"
-  | "delivered"
-  | "review_request"
-  | "refund"
-  | "cancellation"
-  | "return_update";
+export type { MailTemplateId, MailLocale };
 
-const subjects: Record<"de" | "en", Record<MailTemplate, string>> = {
-  de: {
-    order_confirmation: "Bestellung bestätigt",
-    payment_confirmation: "Zahlung erhalten",
-    production_started: "Wir fertigen dein Stück",
-    order_ready: "Bereit zum Versand",
-    shipped: "Unterwegs",
-    delivered: "Zugestellt",
-    review_request: "Wie war’s?",
-    refund: "Erstattung",
-    cancellation: "Stornierung",
-    return_update: "Retouren-Update",
-  },
-  en: {
-    order_confirmation: "Order confirmed",
-    payment_confirmation: "Payment received",
-    production_started: "We’re making your piece",
-    order_ready: "Ready to ship",
-    shipped: "On the way",
-    delivered: "Delivered",
-    review_request: "How was it?",
-    refund: "Refund",
-    cancellation: "Cancellation",
-    return_update: "Return update",
-  },
-};
+function normalizeLocale(locale?: string): MailLocale {
+  return locale === "en" ? "en" : "de";
+}
+
+export async function sendTemplateEmail(input: {
+  to: string;
+  template: MailTemplateId;
+  locale?: string;
+  name?: string;
+  email?: string;
+  orderId?: string;
+  orderTotalCents?: number;
+  itemsSummary?: string;
+  trackingUrl?: string;
+  extraHtml?: string;
+  replyTo?: string;
+}) {
+  const locale = normalizeLocale(input.locale);
+  const built = buildMailTemplate(input.template, locale, {
+    name: input.name,
+    email: input.email || input.to,
+    orderId: input.orderId,
+    orderTotal:
+      typeof input.orderTotalCents === "number"
+        ? formatMoney(input.orderTotalCents)
+        : undefined,
+    itemsSummary: input.itemsSummary,
+    trackingUrl: input.trackingUrl,
+    extraHtml: input.extraHtml,
+  });
+
+  return sendEmail({
+    to: input.to,
+    subject: built.subject,
+    html: built.html,
+    replyTo: input.replyTo || brand.supportEmail,
+  });
+}
+
+/** @deprecated use sendTemplateEmail — kept for existing imports */
+export type MailTemplate = MailTemplateId;
 
 export async function sendTransactionalEmail(input: {
   to: string;
-  template: MailTemplate;
+  template: MailTemplateId;
   locale: "de" | "en";
   orderId: string;
   bodyExtra?: string;
+  name?: string;
+  orderTotalCents?: number;
+  itemsSummary?: string;
 }) {
-  const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.EMAIL_FROM ?? `${brand.name} <noreply@PLACEHOLDER.domain>`;
-  const subject = `${brand.name}: ${subjects[input.locale][input.template]} (${input.orderId})`;
-  const html = `
-    <div style="font-family:Arial,sans-serif;background:#0B0B0F;color:#F4F1EA;padding:32px">
-      <h1 style="font-size:28px;letter-spacing:-0.03em">${brand.name}</h1>
-      <p style="font-size:18px">${subjects[input.locale][input.template]}</p>
-      <p>Order: <strong>${input.orderId}</strong></p>
-      ${input.bodyExtra ? `<p>${input.bodyExtra}</p>` : ""}
-      <p style="color:#9a968c;font-size:12px">support: ${brand.supportEmail}</p>
-    </div>
-  `;
-
-  if (!apiKey) {
-    console.info("[email:dry-run]", { to: input.to, subject });
-    return { ok: true, dryRun: true };
-  }
-
-  const resend = new Resend(apiKey);
-  await resend.emails.send({
-    from,
+  return sendTemplateEmail({
     to: input.to,
-    replyTo: brand.supportEmail,
-    subject,
-    html,
+    template: input.template,
+    locale: input.locale,
+    orderId: input.orderId,
+    name: input.name,
+    orderTotalCents: input.orderTotalCents,
+    itemsSummary: input.itemsSummary,
+    extraHtml: input.bodyExtra,
   });
-  return { ok: true, dryRun: false };
+}
+
+export async function sendWelcomeEmail(input: {
+  to: string;
+  name?: string;
+  locale?: string;
+}) {
+  return sendTemplateEmail({
+    to: input.to,
+    template: "welcome",
+    locale: input.locale,
+    name: input.name || input.to.split("@")[0],
+    email: input.to,
+  });
+}
+
+export async function sendOrderEmails(input: {
+  to: string;
+  name: string;
+  orderId: string;
+  locale?: string;
+  orderTotalCents: number;
+  items: Array<{ title: string; qty: number }>;
+}) {
+  const itemsSummary = `<ul>${input.items
+    .map((i) => `<li>${i.qty}× ${i.title}</li>`)
+    .join("")}</ul>`;
+
+  const customer = await sendTemplateEmail({
+    to: input.to,
+    template: "order_confirmation",
+    locale: input.locale,
+    name: input.name,
+    email: input.to,
+    orderId: input.orderId,
+    orderTotalCents: input.orderTotalCents,
+    itemsSummary,
+    replyTo: brand.ordersEmail,
+  });
+
+  const admin = await sendTemplateEmail({
+    to: brand.ordersEmail,
+    template: "admin_new_order",
+    locale: "de",
+    name: input.name,
+    email: input.to,
+    orderId: input.orderId,
+    orderTotalCents: input.orderTotalCents,
+    itemsSummary,
+    replyTo: input.to,
+  });
+
+  return { customer, admin };
 }

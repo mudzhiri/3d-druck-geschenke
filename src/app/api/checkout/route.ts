@@ -2,13 +2,13 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import Stripe from "stripe";
 import { createOrderFromCart } from "@/lib/orders/store";
-import { sendTransactionalEmail } from "@/lib/email/transactional";
+import { sendOrderEmails, sendTemplateEmail } from "@/lib/email/transactional";
 import { brand } from "@/lib/brand";
 
 const bodySchema = z.object({
   email: z.string().email(),
   customer: z.string().min(1),
-  locale: z.enum(["de", "en"]),
+  locale: z.enum(["de", "en", "fr", "es", "it", "zh"]).default("de"),
   country: z.string().default("DE"),
   revenueCents: z.number().int().nonnegative(),
   items: z.array(
@@ -38,13 +38,13 @@ export async function POST(request: Request) {
   }
   const data = parsed.data;
 
-  // Demo products are not for sale — block real payment path
   if (data.items.length === 0) {
     return NextResponse.json({ error: "Empty cart" }, { status: 400 });
   }
 
   const stripeKey = process.env.STRIPE_SECRET_KEY;
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? brand.domainPlaceholder;
+  const mailLocale = data.locale === "en" ? "en" : "de";
 
   if (stripeKey && process.env.ALLOW_DEMO_CHECKOUT === "true") {
     const stripe = new Stripe(stripeKey);
@@ -67,15 +67,18 @@ export async function POST(request: Request) {
       success_url: `${siteUrl}/${data.locale}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${siteUrl}/${data.locale}/cart`,
       locale: data.locale === "de" ? "de" : "en",
+      metadata: {
+        customer_name: data.customer,
+        app_locale: data.locale,
+      },
     });
     return NextResponse.json({ url: session.url, sessionId: session.id });
   }
 
-  // Local/demo fulfillment path (no live charge) — creates order + production jobs
   const order = createOrderFromCart({
     email: data.email,
     customer: data.customer,
-    locale: data.locale,
+    locale: mailLocale,
     country: data.country,
     items: data.items.map((i) => ({
       productId: i.productId,
@@ -88,12 +91,25 @@ export async function POST(request: Request) {
     revenueCents: data.revenueCents,
   });
 
-  await sendTransactionalEmail({
+  await sendOrderEmails({
     to: data.email,
-    template: "order_confirmation",
-    locale: data.locale,
+    name: data.customer,
     orderId: order.id,
+    locale: mailLocale,
+    orderTotalCents: data.revenueCents,
+    items: data.items.map((i) => ({ title: i.title, qty: i.qty })),
   });
+
+  // If POD items exist, also send production_started shortly (same request for demo)
+  if (data.items.some((i) => i.mode === "PRINT_ON_DEMAND")) {
+    await sendTemplateEmail({
+      to: data.email,
+      template: "production_started",
+      locale: mailLocale,
+      name: data.customer,
+      orderId: order.id,
+    });
+  }
 
   return NextResponse.json({
     orderId: order.id,

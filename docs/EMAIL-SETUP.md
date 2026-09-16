@@ -104,7 +104,40 @@ NEXT_PUBLIC_ORDERS_EMAIL=bestellungen@3d-druck-geschenke.de
 | Formular | Ziel |
 |---|---|
 | Kontakt `/de/contact` | `POST /api/contact` → **info@** (+ Bestätigung an Absender) |
-| Newsletter Startseite | `POST /api/newsletter` → **info@** |
+| Newsletter Startseite | `POST /api/newsletter` → **info@** + Willkommensmail an Abonnent |
+
+---
+
+## Automatische Mails (Vorlagen)
+
+Vorlagen liegen in `src/lib/email/templates.ts`. Versand über Resend (`RESEND_API_KEY`).
+
+| Anlass | Template-ID | Wann |
+|---|---|---|
+| Anmeldung / Social Login (neu) | `welcome` | Register + `/auth/callback` (neue Accounts) |
+| Newsletter | `newsletter_welcome` | Nach Newsletter-Signup |
+| Bestellung | `order_confirmation` | Demo-Checkout + Stripe Webhook |
+| Admin-Hinweis | `admin_new_order` | Parallel an **bestellungen@** |
+| Zahlung | `payment_confirmation` | Stripe `checkout.session.completed` |
+| Produktion gestartet | `production_started` | POD-Bestellung / Webhook |
+| Fertig zum Versand | `order_ready` | Ops: `POST /api/ops/send-email` |
+| Versandt | `shipped` | Ops |
+| Zugestellt | `delivered` | Ops |
+| Bewertung | `review_request` | Ops |
+| Erstattung | `refund` | Ops |
+| Storno | `cancellation` | Ops |
+| Retoure | `return_update` | Ops |
+
+Ops-Endpoint (geschützt mit `CRON_SECRET`):
+
+```bash
+curl -X POST https://www.3d-druck-geschenke.de/api/ops/send-email \
+  -H "Authorization: Bearer $CRON_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{"to":"kunde@example.com","template":"shipped","locale":"de","name":"Anna","orderId":"ORD-2026-000130","trackingUrl":"https://…"}'
+```
+
+Account-UI: `/de/register` (Passwort + Social) · `/de/login` (Passwort + Social + Magic Link)
 
 ---
 
@@ -115,4 +148,6 @@ NEXT_PUBLIC_ORDERS_EMAIL=bestellungen@3d-druck-geschenke.de
 - [ ] Testmail empfangen
 - [ ] Resend Domain verifiziert
 - [ ] Kontaktformular getestet
+- [ ] Register + Willkommensmail getestet
+- [ ] Demo-Checkout → Bestätigungsmail getestet
 - [ ] (Optional) „Senden als“ in Gmail oder UD-IMAP eingerichtet

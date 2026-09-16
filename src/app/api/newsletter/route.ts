@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getInfoInbox, newsletterAdminEmail, sendEmail } from "@/lib/email/send";
+import { sendTemplateEmail } from "@/lib/email/transactional";
 
 const schema = z.object({
   email: z.string().email().max(200),
@@ -26,16 +27,23 @@ export async function POST(request: Request) {
   }
 
   const mail = newsletterAdminEmail(parsed.data);
-  const result = await sendEmail({
+  const admin = await sendEmail({
     to: getInfoInbox(),
     subject: mail.subject,
     html: mail.html,
     replyTo: parsed.data.email,
   });
 
-  if (!result.ok) {
+  if (!admin.ok) {
     return NextResponse.json({ error: "Send failed" }, { status: 502 });
   }
 
-  return NextResponse.json({ ok: true, dryRun: result.dryRun ?? false });
+  await sendTemplateEmail({
+    to: parsed.data.email,
+    template: "newsletter_welcome",
+    locale: parsed.data.locale,
+    email: parsed.data.email,
+  });
+
+  return NextResponse.json({ ok: true, dryRun: admin.dryRun ?? false });
 }

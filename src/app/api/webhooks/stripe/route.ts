@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { createOrderFromCart } from "@/lib/orders/store";
-import { sendTransactionalEmail } from "@/lib/email/transactional";
+import { sendOrderEmails, sendTemplateEmail } from "@/lib/email/transactional";
 
 export async function POST(request: Request) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -25,10 +25,19 @@ export async function POST(request: Request) {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
+    const locale =
+      session.metadata?.app_locale === "de" || session.locale === "de" ? "de" : "en";
+    const email =
+      session.customer_details?.email ?? session.customer_email ?? "unknown@example.com";
+    const name =
+      session.customer_details?.name ??
+      session.metadata?.customer_name ??
+      "Customer";
+
     const order = createOrderFromCart({
-      email: session.customer_details?.email ?? session.customer_email ?? "unknown@example.com",
-      customer: session.customer_details?.name ?? "Customer",
-      locale: session.locale === "de" ? "de" : "en",
+      email,
+      customer: name,
+      locale,
       country: session.customer_details?.address?.country ?? "DE",
       items: [
         {
@@ -42,10 +51,30 @@ export async function POST(request: Request) {
       revenueCents: session.amount_total ?? 0,
       externalId: session.id,
     });
-    await sendTransactionalEmail({
-      to: order.email,
+
+    await sendOrderEmails({
+      to: email,
+      name,
+      orderId: order.id,
+      locale,
+      orderTotalCents: session.amount_total ?? 0,
+      items: [{ title: "Bestellung", qty: 1 }],
+    });
+
+    await sendTemplateEmail({
+      to: email,
       template: "payment_confirmation",
-      locale: order.locale,
+      locale,
+      name,
+      orderId: order.id,
+      orderTotalCents: session.amount_total ?? 0,
+    });
+
+    await sendTemplateEmail({
+      to: email,
+      template: "production_started",
+      locale,
+      name,
       orderId: order.id,
     });
   }

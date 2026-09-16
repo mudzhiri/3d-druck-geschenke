@@ -10,6 +10,16 @@
 | TikTok | Custom OAuth → Supabase session | `TIKTOK_CLIENT_KEY`, `TIKTOK_CLIENT_SECRET`, `SUPABASE_SERVICE_ROLE_KEY` |
 | Instagram | Custom OAuth → Supabase session | `INSTAGRAM_CLIENT_ID`, `INSTAGRAM_CLIENT_SECRET`, `SUPABASE_SERVICE_ROLE_KEY` |
 | Magic Link | Supabase OTP email | Auth email templates / SMTP |
+| E-Mail + Passwort | Supabase `signUp` / `signInWithPassword` | Auth → Providers → Email aktiv |
+
+## Shop-Routen
+
+| Route | Zweck |
+|---|---|
+| `/de/register` | Konto erstellen (Social + Passwort) → Willkommensmail |
+| `/de/login` | Einloggen (Social + Passwort + Magic Link) |
+| `/de/account` | Kontobereich (geschützt) |
+| `/auth/callback` | OAuth / Magic-Link Callback (+ Welcome bei neuen Accounts) |
 
 ## Supabase project
 

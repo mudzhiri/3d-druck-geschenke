@@ -146,6 +146,9 @@ export function SiteFooter({ locale }: { locale: Locale }) {
           <Link className="block text-paper/70 hover:text-yellow" href={`/${locale}/login`}>
             {t(locale, "auth_login_title")}
           </Link>
+          <Link className="block text-paper/70 hover:text-yellow" href={`/${locale}/register`}>
+            {t(locale, "auth_create_account")}
+          </Link>
         </div>
         <div className="space-y-2 text-sm lg:col-span-2">
           <p className="font-extrabold uppercase">{t(locale, "legal_nav")}</p>
