@@ -59,7 +59,7 @@ function seedToProduct(s: Seed): CatalogProduct {
     limited_units: s.drop === "LIMITED" ? 80 : null,
     personalizable: s.personalizable,
     personalization_fields: s.fields,
-    images: [`/products/${s.sku.toLowerCase()}.svg`],
+    images: [`/products/${s.sku.toLowerCase()}.png`],
     dimensions: s.dims,
     weight_g: s.weight_g,
     care: {

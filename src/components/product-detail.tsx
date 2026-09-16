@@ -53,7 +53,7 @@ export function ProductDetail({
           alt={title}
           fill
           unoptimized
-          className="object-contain p-8"
+          className="object-cover"
           priority
         />
         {!product.for_sale && (
@@ -75,18 +75,6 @@ export function ProductDetail({
         <h1 className="display text-5xl font-black md:text-6xl">{title}</h1>
         <p className="mt-3 text-2xl font-extrabold">{formatMoney(unit)}</p>
         <p className="mt-4 text-ink/75">{description}</p>
-        {product.production.stl_master_sku && (
-          <p className="mt-3 text-xs font-bold uppercase tracking-wide text-muted">
-            STL · {product.production.stl_master_sku}_MASTER_v1 ·{" "}
-            <a
-              className="underline"
-              href={`/stl/${product.production.stl_master_sku}_MASTER_v1.stl`}
-              download
-            >
-              {t(locale, "label_download")}
-            </a>
-          </p>
-        )}
 
         <div className="mt-8">
           <p className="mb-3 text-sm font-extrabold uppercase tracking-wide text-muted">
@@ -154,12 +142,6 @@ export function ProductDetail({
             className="focus-ring w-20 rounded-md border-2 border-ink bg-paper px-3 py-2"
           />
         </div>
-
-        <p className="mt-4 text-sm text-muted">
-          {variant?.mode === "PRINT_ON_DEMAND"
-            ? t(locale, "stock_pod", { n: product.production.estimated_print_minutes })
-            : t(locale, "stock_instock", { n: variant?.available_stock ?? 0 })}
-        </p>
 
         <button
           type="button"
@@ -236,7 +218,7 @@ export function ProductDetail({
           <div>
             <h2 className="font-extrabold uppercase">{t(locale, "find_in_store")}</h2>
             <p className="mt-1 text-muted">
-              {stores[0]?.name} · {stores[0]?.city} · {t(locale, "stock_unknown")}
+              {stores[0]?.name} · {stores[0]?.city}
             </p>
           </div>
         </div>

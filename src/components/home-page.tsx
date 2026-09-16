@@ -38,7 +38,7 @@ export function HomePage({ locale }: { locale: Locale }) {
           >
             <div className="floaty relative h-full w-full">
               <Image
-                src="/products/flex-coil.svg"
+                src="/products/pl-flex-coil.png"
                 alt=""
                 fill
                 priority
