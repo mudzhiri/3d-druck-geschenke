@@ -37,6 +37,8 @@ export function ProductCard({
         ? t(locale, "badge_new_drop")
         : null;
 
+  const colors = product.variants.map((v) => v.color);
+
   return (
     <Link href={`/${locale}/product/${product.slug}`} className="group block min-w-[240px] snap-start">
       <motion.div
@@ -72,6 +74,21 @@ export function ProductCard({
           {formatMoney(price, "EUR", moneyLocale)}
         </p>
       </div>
+      {colors.length > 0 && (
+        <div
+          className="mt-2 flex flex-wrap gap-1.5"
+          aria-label={`${colors.length} ${t(locale, "label_color")}`}
+        >
+          {colors.map((c) => (
+            <span
+              key={c.id}
+              title={c.color_name}
+              className="h-3.5 w-3.5 shrink-0 border border-ink"
+              style={{ background: c.hex }}
+            />
+          ))}
+        </div>
+      )}
     </Link>
   );
 }

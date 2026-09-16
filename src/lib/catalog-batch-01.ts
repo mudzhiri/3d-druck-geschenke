@@ -43,6 +43,100 @@ type Seed = {
   included?: { de: string; en: string };
 };
 
+/** 20 filament colors for name keychain (base tone; text contrast printed white/ink). */
+const KEYCHAIN_COLORS: { code: string; name: string; hex: string }[] = [
+  { code: "VIO", name: "Violet", hex: "#6B2D9B" },
+  { code: "YEL", name: "Feast Yellow", hex: "#FFE600" },
+  { code: "INK", name: "Ink Black", hex: "#0B0B0F" },
+  { code: "WHT", name: "Jade White", hex: "#F5F5F0" },
+  { code: "COR", name: "Coral", hex: "#FF5A3C" },
+  { code: "PNK", name: "Hot Pink", hex: "#FF2D8A" },
+  { code: "RED", name: "Signal Red", hex: "#E10600" },
+  { code: "ORG", name: "Orange Pop", hex: "#FF7A00" },
+  { code: "LIM", name: "Acid Lime", hex: "#C8FF3D" },
+  { code: "GRN", name: "Forest", hex: "#1F7A3A" },
+  { code: "TEA", name: "Teal", hex: "#1F8A7A" },
+  { code: "CYA", name: "Cyan", hex: "#00C2D1" },
+  { code: "BLU", name: "Royal Blue", hex: "#1E4DD8" },
+  { code: "NAV", name: "Navy", hex: "#14213D" },
+  { code: "PUR", name: "Grape", hex: "#7B61FF" },
+  { code: "LAV", name: "Lavender", hex: "#C5A3FF" },
+  { code: "BRN", name: "Chocolate", hex: "#5C3A21" },
+  { code: "BEG", name: "Sand Beige", hex: "#E8E4DA" },
+  { code: "SLV", name: "Silver Grey", hex: "#A8ADB5" },
+  { code: "GLD", name: "Gold", hex: "#D4A017" },
+];
+
+function variantsForSeed(
+  s: Seed,
+  stock: number,
+): CatalogProduct["variants"] {
+  if (s.slug === "name-keychain") {
+    return KEYCHAIN_COLORS.map((c, i) => ({
+      id: `v-${s.id}-${c.code.toLowerCase()}`,
+      master_sku: `${s.sku}-${c.code}-M`,
+      size: "M" as const,
+      color: {
+        id: `c-key-${c.code.toLowerCase()}`,
+        color_name: c.name,
+        hex: c.hex,
+        filament_sku: `FIL-PLA-${c.code}-01`,
+        printer_profile: "pla-standard-0.2",
+        stock_material: "PLA",
+      },
+      price_cents: s.price,
+      personalization_price_cents: s.persoPrice,
+      available_stock: i < 8 ? stock : 0,
+      production_capacity: 40,
+      safety_stock: 5,
+      mode: (i < 8 ? s.mode || "PRINT_ON_DEMAND" : "PRINT_ON_DEMAND") as
+        | "IN_STOCK"
+        | "PRINT_ON_DEMAND",
+    }));
+  }
+
+  return [
+    {
+      id: `v-${s.id}-a`,
+      master_sku: `${s.sku}-${s.colorCode}-M`,
+      size: "M",
+      color: {
+        id: `c-${s.colorCode.toLowerCase()}`,
+        color_name: s.colorName,
+        hex: s.hex,
+        filament_sku: `FIL-${(s.material || "PLA").toUpperCase()}-${s.colorCode}-01`,
+        printer_profile: "pla-standard-0.2",
+        stock_material: s.material || "PLA",
+      },
+      price_cents: s.price,
+      personalization_price_cents: s.persoPrice,
+      available_stock: stock,
+      production_capacity: 40,
+      safety_stock: 5,
+      mode: s.mode || "PRINT_ON_DEMAND",
+    },
+    {
+      id: `v-${s.id}-b`,
+      master_sku: `${s.sku}-INK-M`,
+      size: "M",
+      color: {
+        id: "c-ink",
+        color_name: "Ink",
+        hex: "#0B0B0F",
+        filament_sku: "FIL-PLA-INK-01",
+        printer_profile: "pla-standard-0.2",
+        stock_material: "PLA",
+      },
+      price_cents: s.price,
+      personalization_price_cents: s.persoPrice,
+      available_stock: 0,
+      production_capacity: 40,
+      safety_stock: 5,
+      mode: "PRINT_ON_DEMAND",
+    },
+  ];
+}
+
 function seedToProduct(s: Seed): CatalogProduct {
   const stock = s.mode === "IN_STOCK" ? 18 : 0;
   const skuImg = `/products/${s.sku.toLowerCase()}.png`;
@@ -91,107 +185,7 @@ function seedToProduct(s: Seed): CatalogProduct {
       product_class: s.product_class,
       material: s.material || "PLA",
     },
-    variants: [
-      {
-        id: `v-${s.id}-a`,
-        master_sku: `${s.sku}-${s.colorCode}-M`,
-        size: "M",
-        color: {
-          id: `c-${s.colorCode.toLowerCase()}`,
-          color_name: s.colorName,
-          hex: s.hex,
-          filament_sku: `FIL-${(s.material || "PLA").toUpperCase()}-${s.colorCode}-01`,
-          printer_profile: "pla-standard-0.2",
-          stock_material: s.material || "PLA",
-        },
-        price_cents: s.price,
-        personalization_price_cents: s.persoPrice,
-        available_stock: stock,
-        production_capacity: 40,
-        safety_stock: 5,
-        mode: s.mode || "PRINT_ON_DEMAND",
-      },
-      {
-        id: `v-${s.id}-b`,
-        master_sku: `${s.sku}-INK-M`,
-        size: "M",
-        color: {
-          id: "c-ink",
-          color_name: "Ink / Yellow",
-          hex: "#0B0B0F",
-          filament_sku: "FIL-PLA-INK-01",
-          printer_profile: "pla-standard-0.2",
-          stock_material: "PLA",
-        },
-        price_cents: s.price,
-        personalization_price_cents: s.persoPrice,
-        available_stock: 0,
-        production_capacity: 40,
-        safety_stock: 5,
-        mode: "PRINT_ON_DEMAND",
-      },
-      ...(s.slug === "name-keychain"
-        ? [
-            {
-              id: `v-${s.id}-yel`,
-              master_sku: `${s.sku}-YEL-M`,
-              size: "M" as const,
-              color: {
-                id: "c-yel-key",
-                color_name: "Feast Yellow / Ink",
-                hex: "#FFE600",
-                filament_sku: "FIL-PLA-YEL-01",
-                printer_profile: "pla-standard-0.2",
-                stock_material: "PLA",
-              },
-              price_cents: s.price,
-              personalization_price_cents: s.persoPrice,
-              available_stock: stock,
-              production_capacity: 40,
-              safety_stock: 5,
-              mode: (s.mode || "PRINT_ON_DEMAND") as "IN_STOCK" | "PRINT_ON_DEMAND",
-            },
-            {
-              id: `v-${s.id}-cor`,
-              master_sku: `${s.sku}-COR-M`,
-              size: "M" as const,
-              color: {
-                id: "c-cor-key",
-                color_name: "Coral / White",
-                hex: "#FF5A3C",
-                filament_sku: "FIL-PLA-COR-01",
-                printer_profile: "pla-standard-0.2",
-                stock_material: "PLA",
-              },
-              price_cents: s.price,
-              personalization_price_cents: s.persoPrice,
-              available_stock: stock,
-              production_capacity: 40,
-              safety_stock: 5,
-              mode: (s.mode || "PRINT_ON_DEMAND") as "IN_STOCK" | "PRINT_ON_DEMAND",
-            },
-            {
-              id: `v-${s.id}-tea`,
-              master_sku: `${s.sku}-TEA-M`,
-              size: "M" as const,
-              color: {
-                id: "c-tea-key",
-                color_name: "Teal / White",
-                hex: "#1F8A7A",
-                filament_sku: "FIL-PLA-TEA-01",
-                printer_profile: "pla-standard-0.2",
-                stock_material: "PLA",
-              },
-              price_cents: s.price,
-              personalization_price_cents: s.persoPrice,
-              available_stock: stock,
-              production_capacity: 40,
-              safety_stock: 5,
-              mode: (s.mode || "PRINT_ON_DEMAND") as "IN_STOCK" | "PRINT_ON_DEMAND",
-            },
-          ]
-        : []),
-    ],
+    variants: variantsForSeed(s, stock),
     for_sale: true,
   };
 }
