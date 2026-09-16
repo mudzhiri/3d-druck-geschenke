@@ -1,6 +1,7 @@
 import { stores } from "@/lib/catalog";
 import type { Locale } from "@/lib/brand";
 import { t } from "@/lib/i18n";
+import { vibeLabels } from "@/lib/product-i18n";
 
 export default async function StoresPage({
   params,
@@ -21,17 +22,16 @@ export default async function StoresPage({
               {s.address}, {s.city}
             </p>
             <p className="mt-1 font-extrabold uppercase text-ink">{s.is_24_7 ? "24/7" : s.hours}</p>
-            <p className="mt-4 text-sm text-muted">Categories: {s.categories.join(" · ")}</p>
-            <p className="mt-2 text-xs text-muted">
-              Live inventory hidden until retail sync is reliable.
+            <p className="mt-4 text-sm text-muted">
+              {t(locale, "stores_categories")}:{" "}
+              {s.categories.map((c) => vibeLabels[c]?.[locale] ?? c).join(" · ")}
             </p>
+            <p className="mt-2 text-xs text-muted">{t(locale, "stores_inventory_note")}</p>
           </li>
         ))}
       </ul>
       <div className="mt-10 overflow-hidden border-2 border-ink bg-yellow p-8">
-        <p className="text-sm font-medium text-ink/80">
-          Map placeholder — wire Mapbox/Google when API key approved.
-        </p>
+        <p className="text-sm font-medium text-ink/80">{t(locale, "stores_map_placeholder")}</p>
         <p className="mt-2 font-mono text-xs text-ink">
           {stores[0]?.lat}, {stores[0]?.lng}
         </p>
