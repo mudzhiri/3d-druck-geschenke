@@ -48,6 +48,8 @@ export type ProductionSpec = {
   post_process_minutes: number;
   quality_check_required: boolean;
   packaging_sku: string;
+  /** Base SKU for master STL lookup, e.g. PL-NAME-KEY */
+  stl_master_sku?: string;
 };
 
 export type ProductCompliance = {
@@ -79,6 +81,10 @@ export type CatalogProduct = {
   status: ProductStatus;
   group: ProductGroup;
   vibes: Vibe[];
+  /** Top-level shop category id from categories.ts */
+  category_id?: string;
+  /** Subcategory id from categories.ts */
+  subcategory_id?: string;
   license_id: string;
   name: { de: string; en: string };
   description: { de: string; en: string };

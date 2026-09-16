@@ -68,6 +68,18 @@ export function ProductDetail({
         <h1 className="display text-5xl font-black md:text-6xl">{title}</h1>
         <p className="mt-3 text-2xl font-extrabold">{formatMoney(unit)}</p>
         <p className="mt-4 text-ink/75">{description}</p>
+        {product.production.stl_master_sku && (
+          <p className="mt-3 text-xs font-bold uppercase tracking-wide text-muted">
+            STL · {product.production.stl_master_sku}_MASTER_v1 ·{" "}
+            <a
+              className="underline"
+              href={`/stl/${product.production.stl_master_sku}_MASTER_v1.stl`}
+              download
+            >
+              Download
+            </a>
+          </p>
+        )}
 
         <div className="mt-8">
           <p className="mb-3 text-sm font-extrabold uppercase tracking-wide text-muted">Color</p>

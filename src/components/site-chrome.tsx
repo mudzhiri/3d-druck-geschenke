@@ -15,6 +15,7 @@ import { BrandLogo } from "./brand-logo";
 import { openCookieSettings } from "./cookie-banner";
 import { cn } from "@/lib/utils";
 import { legalTitles, type LegalSlug } from "@/lib/legal/registry";
+import { ShopMegaMenu } from "./shop-mega-menu";
 
 function switchLocalePath(pathname: string | null, from: Locale, to: Locale) {
   if (!pathname) return `/${to}`;
@@ -44,7 +45,6 @@ export function SiteHeader({ locale }: { locale: Locale }) {
   const [langOpen, setLangOpen] = useState(false);
 
   const links = [
-    { href: `/${locale}/shop`, label: t(locale, "nav_shop") },
     { href: `/${locale}/shop/drops`, label: t(locale, "nav_drops") },
     { href: `/${locale}/blog`, label: t(locale, "blog_title") },
     { href: `/${locale}/customize`, label: t(locale, "nav_custom") },
@@ -61,6 +61,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm font-extrabold uppercase tracking-wide text-ink md:flex">
+          <ShopMegaMenu locale={locale} />
           {links.map((l) => (
             <Link key={l.href} href={l.href} className="focus-ring hover:underline">
               {l.label}
@@ -97,6 +98,13 @@ export function SiteHeader({ locale }: { locale: Locale }) {
               </div>
             )}
           </div>
+
+          <Link
+            href={`/${locale}/shop`}
+            className="focus-ring text-xs font-extrabold uppercase hover:underline md:hidden"
+          >
+            {t(locale, "nav_shop")}
+          </Link>
 
           <Link
             href={`/${locale}/account`}

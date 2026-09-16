@@ -11,6 +11,22 @@ const baseKeys = {
     it: "Shop",
     zh: "商店",
   },
+  nav_categories: {
+    de: "Kategorien",
+    en: "Categories",
+    fr: "Catégories",
+    es: "Categorías",
+    it: "Categorie",
+    zh: "分类",
+  },
+  nav_all_products: {
+    de: "Alle Produkte",
+    en: "All products",
+    fr: "Tous les produits",
+    es: "Todos los productos",
+    it: "Tutti i prodotti",
+    zh: "全部商品",
+  },
   nav_drops: {
     de: "Drops",
     en: "Drops",

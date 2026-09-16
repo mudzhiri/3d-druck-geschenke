@@ -1,4 +1,8 @@
 import { catalog } from "../catalog";
+import {
+  prepareOrderStlFiles,
+  skuBaseFromMaster,
+} from "../production/stl-naming";
 
 export type ProductionStatus =
   | "QUEUED"
@@ -155,8 +159,36 @@ export function createOrderFromCart(input: {
   };
   orders().unshift(order);
 
+  // Always queue STL copies for print floor (named by order + SKU + custom text)
+  try {
+    const stlItems = input.items.map((item) => {
+      const product = catalog.find((p) => p.id === item.productId);
+      const variant = product?.variants.find((v) => v.id === item.variantId);
+      const masterSku = variant?.master_sku || product?.production.stl_master_sku || "PL-UNKNOWN";
+      const base =
+        product?.production.stl_master_sku || skuBaseFromMaster(masterSku);
+      const colorCode = masterSku.split("-").slice(-2, -1)[0] || "DEF";
+      return {
+        sku: masterSku,
+        masterSkuBase: base,
+        colorCode,
+        personalization: item.personalization as
+          | { name?: string; initials?: string; text?: string }
+          | undefined,
+        fileVersion: product?.production.file_version,
+      };
+    });
+    prepareOrderStlFiles({ orderId: id, items: stlItems });
+  } catch (err) {
+    console.error("[stl] prepare failed", err);
+  }
+
   for (const item of input.items) {
-    if (item.mode !== "PRINT_ON_DEMAND") continue;
+    // Print queue for POD + personalized stock items
+    const needsJob =
+      item.mode === "PRINT_ON_DEMAND" ||
+      Boolean(item.personalization && Object.keys(item.personalization).length);
+    if (!needsJob && item.mode === "IN_STOCK") continue;
     const product = catalog.find((p) => p.id === item.productId);
     const variant = product?.variants.find((v) => v.id === item.variantId);
     if (!product || !variant) continue;
