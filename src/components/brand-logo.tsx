@@ -33,7 +33,7 @@ export function BrandLogo({ className, markOnly = false, invert = false }: Props
       </svg>
       {!markOnly && (
         <span
-          className="display text-[1.35rem] font-black uppercase leading-none tracking-[-0.04em] sm:text-[1.55rem]"
+          className="display text-[1.35rem] font-black uppercase leading-none tracking-[0.04em] sm:text-[1.55rem]"
           style={{ color: ink }}
         >
           {brand.wordmark}

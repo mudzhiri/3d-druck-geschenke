@@ -74,7 +74,7 @@ export default async function LegalPage({
       <div className="mt-10 space-y-8">
         {doc.sections.map((section) => (
           <section key={section.heading}>
-            <h2 className="text-lg font-extrabold uppercase tracking-tight">{section.heading}</h2>
+            <h2 className="text-lg font-extrabold uppercase tracking-wide leading-snug">{section.heading}</h2>
             <div className="mt-3 space-y-3 text-sm leading-relaxed text-ink/80">
               {section.paragraphs.map((p, i) => (
                 <p key={i} className="whitespace-pre-line">

@@ -45,14 +45,15 @@ body {
 
 .display {
   font-family: var(--font-display), var(--font-cjk), system-ui, sans-serif;
-  letter-spacing: -0.045em;
-  line-height: 0.9;
+  /* Bebas is already condensed — avoid negative tracking/leading overlap */
+  letter-spacing: 0.02em;
+  line-height: 1.08;
   text-transform: uppercase;
 }
 
 .lang-zh .display {
-  letter-spacing: 0;
-  line-height: 1.1;
+  letter-spacing: 0.04em;
+  line-height: 1.25;
   text-transform: none;
 }
 

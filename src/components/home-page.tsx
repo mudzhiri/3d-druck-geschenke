@@ -60,7 +60,7 @@ export function HomePage({ locale }: { locale: Locale }) {
             initial={{ opacity: 0, y: 22 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.06 }}
-            className="display max-w-[11ch] text-5xl font-black text-ink md:text-7xl lg:text-[5.75rem]"
+            className="display max-w-[14ch] text-5xl font-black text-ink md:text-7xl lg:text-[5.5rem]"
           >
             {pickLocalized(brand.headline, locale)}
           </motion.h1>
@@ -68,7 +68,7 @@ export function HomePage({ locale }: { locale: Locale }) {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.14 }}
-            className="mt-5 max-w-md text-base font-medium text-ink/80 md:text-lg"
+            className="mt-6 max-w-md text-base font-medium leading-relaxed text-ink/80 md:text-lg"
           >
             {pickLocalized(brand.subline, locale)}
           </motion.p>

@@ -58,7 +58,7 @@ export default async function BlogIndexPage({
               </span>
             </div>
             <div className="p-5">
-              <h2 className="font-extrabold uppercase leading-tight">{post.title}</h2>
+              <h2 className="font-extrabold uppercase leading-snug tracking-wide">{post.title}</h2>
               <p className="mt-2 text-sm text-ink/70">{post.excerpt}</p>
               <p className="mt-3 text-xs font-extrabold uppercase text-muted">
                 {post.published_at

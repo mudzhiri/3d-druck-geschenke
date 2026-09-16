@@ -60,7 +60,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
           <BrandLogo className="hidden sm:inline-flex" />
         </Link>
 
-        <nav className="hidden items-center gap-6 text-sm font-extrabold uppercase tracking-wide text-ink md:flex">
+        <nav className="hidden items-center gap-5 text-sm font-extrabold uppercase tracking-[0.06em] text-ink lg:gap-7 md:flex">
           <ShopMegaMenu locale={locale} />
           {links.map((l) => (
             <Link key={l.href} href={l.href} className="focus-ring hover:underline">
