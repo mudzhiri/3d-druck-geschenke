@@ -110,14 +110,22 @@ Katalog-Keywords (nicht 1:1 kopieren, Inspiration): ${BLOG_TOPICS.map((t) => t.p
         ? parsed.secondaryKeywords.map(String).slice(0, 6)
         : fallback.secondaryKeywords,
       angle: String(parsed.angle),
-      coverRemote:
-        typeof parsed.coverRemote === "string" && parsed.coverRemote.startsWith("http")
-          ? parsed.coverRemote
-          : fallback.coverRemote,
+      coverRemote: sanitizeCoverRemote(parsed.coverRemote) || fallback.coverRemote,
     };
   } catch {
     return fallback;
   }
+}
+
+function sanitizeCoverRemote(url: unknown): string | null {
+  if (typeof url !== "string" || !url.startsWith("http")) return null;
+  // Prefer stable Unsplash CDN URLs; reject /photos/.../download links (often 401)
+  if (/images\.unsplash\.com\//i.test(url)) return url;
+  const photo = url.match(/unsplash\.com\/photos\/([a-zA-Z0-9_-]+)/);
+  if (photo) {
+    return `https://images.unsplash.com/photo-${photo[1]}?auto=format&fit=crop&w=1600&q=80`;
+  }
+  return null;
 }
 
 export async function selectDailyTopic(date = new Date()) {
