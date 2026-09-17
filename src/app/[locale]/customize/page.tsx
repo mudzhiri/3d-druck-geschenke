@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getPublicProducts } from "@/lib/catalog";
+import { getPublicProductsAsync } from "@/lib/catalog";
 import type { Locale } from "@/lib/brand";
 import { t } from "@/lib/i18n";
 import { localizedProductName } from "@/lib/product-i18n";
@@ -11,7 +11,7 @@ export default async function CustomizePage({
 }) {
   const { locale: raw } = await params;
   const locale = raw as Locale;
-  const products = getPublicProducts().filter((p) => p.personalizable);
+  const products = (await getPublicProductsAsync()).filter((p) => p.personalizable);
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-12 md:px-6">

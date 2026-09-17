@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { brand, activeLocales } from "@/lib/brand";
-import { getPublicProducts } from "@/lib/catalog";
+import { getPublicProductsAsync } from "@/lib/catalog";
 import { legalSlugs } from "@/lib/legal/registry";
 import { listPublishedPosts } from "@/lib/blog/store";
 
@@ -21,6 +21,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...legalSlugs.map((s) => `/legal/${s}`),
   ];
   const entries: MetadataRoute.Sitemap = [];
+  const products = await getPublicProductsAsync();
   for (const locale of activeLocales) {
     for (const path of staticPaths) {
       entries.push({
@@ -33,7 +34,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         },
       });
     }
-    for (const p of getPublicProducts()) {
+    for (const p of products) {
       entries.push({
         url: `${base}/${locale}/product/${p.slug}`,
         lastModified: new Date(),

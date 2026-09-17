@@ -1,5 +1,9 @@
 import type { CatalogProduct, LicenseRecord, StoreLocation } from "./types";
 import { batch01Products } from "./catalog-batch-01";
+import {
+  agentRowToCatalog,
+  listActiveAgentProducts,
+} from "./products/store";
 
 /** License registry — no third-party IP without documented rights. */
 export const licenses: LicenseRecord[] = [
@@ -13,10 +17,36 @@ export const licenses: LicenseRecord[] = [
 ];
 
 /**
- * Live catalog = batch 01 (20 bestsellers).
- * Publish cadence target: +20 products / day (see docs/PRODUCT-PIPELINE.md).
+ * Static catalog = batch 01.
+ * Daily agent products (gift_agent_products) are merged at runtime — see docs/PRODUCT-AGENT.md.
  */
 export const catalog: CatalogProduct[] = [...batch01Products];
+
+let agentCache: { at: number; products: CatalogProduct[] } | null = null;
+const AGENT_CACHE_MS = 60_000;
+
+async function loadAgentCatalog(): Promise<CatalogProduct[]> {
+  const now = Date.now();
+  if (agentCache && now - agentCache.at < AGENT_CACHE_MS) {
+    return agentCache.products;
+  }
+  try {
+    const rows = await listActiveAgentProducts(500);
+    const products = rows.map(agentRowToCatalog);
+    agentCache = { at: now, products };
+    return products;
+  } catch {
+    return agentCache?.products ?? [];
+  }
+}
+
+export async function getCatalogAsync(): Promise<CatalogProduct[]> {
+  const agent = await loadAgentCatalog();
+  const bySlug = new Map<string, CatalogProduct>();
+  for (const p of catalog) bySlug.set(p.slug, p);
+  for (const p of agent) bySlug.set(p.slug, p);
+  return [...bySlug.values()];
+}
 
 export const stores: StoreLocation[] = [
   {
@@ -36,8 +66,22 @@ export function getProduct(slug: string) {
   return catalog.find((p) => p.slug === slug);
 }
 
+export async function getProductAsync(slug: string) {
+  const all = await getCatalogAsync();
+  return all.find((p) => p.slug === slug);
+}
+
 export function getPublicProducts() {
   return catalog.filter(
+    (p) =>
+      (p.status === "ACTIVE" || p.status === "DRAFT" || p.status === "READY") &&
+      (p.for_sale || p.status === "DRAFT"),
+  );
+}
+
+export async function getPublicProductsAsync() {
+  const all = await getCatalogAsync();
+  return all.filter(
     (p) =>
       (p.status === "ACTIVE" || p.status === "DRAFT" || p.status === "READY") &&
       (p.for_sale || p.status === "DRAFT"),
@@ -48,9 +92,16 @@ export function getProductsByCategory(categorySlug: string, subSlug?: string) {
   const products = getPublicProducts();
   return products.filter((p) => {
     if (!p.category_id && !p.subcategory_id) return categorySlug === "all";
-    // resolve via slug match in page layer — here filter by ids if provided as ids
     if (subSlug) return p.subcategory_id === subSlug || p.category_id === categorySlug;
     return p.category_id === categorySlug;
+  });
+}
+
+export async function getProductsByCategoryAsync(categoryId: string, subId?: string) {
+  const products = await getPublicProductsAsync();
+  return products.filter((p) => {
+    if (subId) return p.subcategory_id === subId;
+    return p.category_id === categoryId;
   });
 }
 
@@ -70,6 +121,18 @@ export function searchCatalog(query: string) {
       p.subcategory_id ?? "",
       p.production.stl_master_sku ?? "",
     ]
+      .join(" ")
+      .toLowerCase();
+    return hay.includes(q) || fuzzyIncludes(hay, q);
+  });
+}
+
+export async function searchCatalogAsync(query: string) {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  const all = await getPublicProductsAsync();
+  return all.filter((p) => {
+    const hay = [p.name.de, p.name.en, p.description.de, p.description.en, ...p.vibes, p.slug]
       .join(" ")
       .toLowerCase();
     return hay.includes(q) || fuzzyIncludes(hay, q);

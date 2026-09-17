@@ -1,4 +1,4 @@
-import { getPublicProducts, catalog } from "@/lib/catalog";
+import { getPublicProductsAsync, getCatalogAsync } from "@/lib/catalog";
 import { ProductCard } from "@/components/product-card";
 import { pickLocalized, type Locale } from "@/lib/brand";
 import type { Vibe } from "@/lib/types";
@@ -32,7 +32,8 @@ export default async function ShopPage({
   const subcategory = category && subKey ? getSubcategory(key, subKey) : undefined;
   const vibe = vibeMap[key];
 
-  let products = getPublicProducts();
+  let products = await getPublicProductsAsync();
+  const catalogSize = (await getCatalogAsync()).length;
   let title = t(locale, "nav_shop");
 
   if (category) {
@@ -97,7 +98,7 @@ export default async function ShopPage({
 
       {!products.length && (
         <p className="mt-10 text-muted">
-          {catalog.length} total in catalog — no matches in this filter.
+          {catalogSize} total in catalog — no matches in this filter.
         </p>
       )}
     </main>

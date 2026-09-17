@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { HomePage } from "@/components/home-page";
 import { brand, type Locale, activeLocales } from "@/lib/brand";
+import { getPublicProductsAsync } from "@/lib/catalog";
 import { notFound } from "next/navigation";
 
 export async function generateMetadata({
@@ -23,5 +24,6 @@ export async function generateMetadata({
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: raw } = await params;
   if (!activeLocales.includes(raw as Locale)) notFound();
-  return <HomePage locale={raw as Locale} />;
+  const products = await getPublicProductsAsync();
+  return <HomePage locale={raw as Locale} products={products} />;
 }

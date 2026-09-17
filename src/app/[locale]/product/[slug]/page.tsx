@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getProduct, getPublicProducts } from "@/lib/catalog";
+import { getProductAsync, getPublicProducts, getPublicProductsAsync } from "@/lib/catalog";
 import { ProductDetail } from "@/components/product-detail";
 import type { Locale } from "@/lib/brand";
 import type { Metadata } from "next";
@@ -18,7 +18,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
   const { locale, slug } = await params;
-  const product = getProduct(slug);
+  const product = await getProductAsync(slug);
   if (!product) return {};
   const lang = locale === "en" ? "en" : "de";
   return {
@@ -33,7 +33,7 @@ export async function generateMetadata({
     },
     openGraph: {
       title: `${product.name[lang]} · ${brand.name}`,
-      images: product.images,
+      images: product.images.filter((src) => !src.startsWith("data:")),
     },
   };
 }
@@ -44,14 +44,14 @@ export default async function ProductPage({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
-  const product = getProduct(slug);
+  const product = await getProductAsync(slug);
   if (!product) notFound();
   const variant = product.variants[0];
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.name.en,
-    image: product.images,
+    image: product.images.filter((src) => !src.startsWith("data:")),
     description: product.description.en,
     sku: variant?.master_sku,
     brand: { "@type": "Brand", name: brand.name },
@@ -64,6 +64,8 @@ export default async function ProductPage({
         : "https://schema.org/PreOrder",
     },
   };
+  // Warm cache / ensure agent products are discoverable for static shells
+  void getPublicProductsAsync();
   return (
     <main>
       <script

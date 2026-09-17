@@ -37,4 +37,4 @@ Siehe `src/lib/categories.ts`:
 | Batch | Datum | Count | Datei |
 |---|---|---|---|
 | 01 | 2026-09-16 | 20 | `catalog-batch-01.ts` |
-| 02 | (next) | 20 | `catalog-batch-02.ts` |
+| Agent | daily 12:00 | +20 | Supabase `gift_agent_products` (see docs/PRODUCT-AGENT.md) |

@@ -3,16 +3,23 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { getPublicProducts } from "@/lib/catalog";
+import type { CatalogProduct } from "@/lib/types";
 import { brand, pickLocalized, type Locale } from "@/lib/brand";
 import { t } from "@/lib/i18n";
-import { getPublicProducts } from "@/lib/catalog";
 import { vibeLabels } from "@/lib/product-i18n";
 import { ProductCard } from "./product-card";
 
 const vibes = ["PLAY", "DESK", "ROOM", "GAMING", "GIFTS", "CUSTOM"] as const;
 
-export function HomePage({ locale }: { locale: Locale }) {
-  const products = getPublicProducts();
+export function HomePage({
+  locale,
+  products: productsProp,
+}: {
+  locale: Locale;
+  products?: CatalogProduct[];
+}) {
+  const products = productsProp ?? getPublicProducts();
   const drops = products.filter((p) => p.group === "DROP" || p.drop_label);
   const heroes = products.filter((p) => p.group === "HERO" || p.group === "EVERGREEN");
   const marquee = t(locale, "marquee");
