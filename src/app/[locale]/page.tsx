@@ -4,6 +4,9 @@ import { brand, type Locale, activeLocales } from "@/lib/brand";
 import { getPublicProductsAsync } from "@/lib/catalog";
 import { notFound } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function generateMetadata({
   params,
 }: {

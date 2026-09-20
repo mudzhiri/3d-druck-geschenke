@@ -6,6 +6,10 @@ import { getCategory, getSubcategory, shopCategories } from "@/lib/categories";
 import Link from "next/link";
 import { t } from "@/lib/i18n";
 
+/** Agent products land daily — never serve a stale static shell. */
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const vibeMap: Record<string, Vibe | "ALL" | "DROPS"> = {
   all: "ALL",
   drops: "DROPS",

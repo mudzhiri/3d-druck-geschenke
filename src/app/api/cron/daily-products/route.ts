@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { runDailyProductAgent } from "@/lib/products/agent";
 
 export const runtime = "nodejs";
@@ -30,6 +31,10 @@ async function handle(req: Request) {
       force,
       limit: Number.isFinite(limit) ? Math.min(Math.max(limit, 1), 40) : 20,
     });
+    // Bust shop/home/product shells so new SKUs are visible immediately.
+    revalidatePath("/", "layout");
+    revalidatePath("/de/shop");
+    revalidatePath("/en/shop");
     return NextResponse.json({ ok: true, ...result });
   } catch (error) {
     return NextResponse.json(

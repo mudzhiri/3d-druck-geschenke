@@ -4,6 +4,9 @@ import type { Locale } from "@/lib/brand";
 import { t } from "@/lib/i18n";
 import { localizedProductName } from "@/lib/product-i18n";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function CustomizePage({
   params,
 }: {

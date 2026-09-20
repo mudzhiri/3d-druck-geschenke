@@ -1,16 +1,14 @@
 import { notFound } from "next/navigation";
-import { getProductAsync, getPublicProducts, getPublicProductsAsync } from "@/lib/catalog";
+import { getProductAsync } from "@/lib/catalog";
 import { ProductDetail } from "@/components/product-detail";
 import type { Locale } from "@/lib/brand";
 import type { Metadata } from "next";
 import { brand } from "@/lib/brand";
 
-export function generateStaticParams() {
-  return getPublicProducts().flatMap((p) => [
-    { locale: "de", slug: p.slug },
-    { locale: "en", slug: p.slug },
-  ]);
-}
+/** Daily agent SKUs must resolve without waiting for a rebuild. */
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const dynamicParams = true;
 
 export async function generateMetadata({
   params,
@@ -64,8 +62,6 @@ export default async function ProductPage({
         : "https://schema.org/PreOrder",
     },
   };
-  // Warm cache / ensure agent products are discoverable for static shells
-  void getPublicProductsAsync();
   return (
     <main>
       <script
