@@ -1,14 +1,19 @@
 import { notFound } from "next/navigation";
 import { getProductAsync } from "@/lib/catalog";
 import { ProductDetail } from "@/components/product-detail";
-import type { Locale } from "@/lib/brand";
+import { activeLocales, brand, type Locale } from "@/lib/brand";
 import type { Metadata } from "next";
-import { brand } from "@/lib/brand";
 
 /** Daily agent SKUs must resolve without waiting for a rebuild. */
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const dynamicParams = true;
+
+function siteBase(): string {
+  return (brand.domainPlaceholder || "https://www.3d-druck-geschenke.de")
+    .replace(/\/$/, "")
+    .replace("https://3d-druck-geschenke.de", "https://www.3d-druck-geschenke.de");
+}
 
 export async function generateMetadata({
   params,
@@ -19,15 +24,16 @@ export async function generateMetadata({
   const product = await getProductAsync(slug);
   if (!product) return {};
   const lang = locale === "en" ? "en" : "de";
+  const base = siteBase();
   return {
     title: product.name[lang],
     description: product.description[lang],
     alternates: {
-      canonical: `/${locale}/product/${slug}`,
-      languages: {
-        de: `/de/product/${slug}`,
-        en: `/en/product/${slug}`,
-      },
+      canonical: `${base}/${locale}/product/${slug}`,
+      languages: Object.fromEntries([
+        ["x-default", `${base}/de/product/${slug}`],
+        ...activeLocales.map((l) => [l, `${base}/${l}/product/${slug}`] as const),
+      ]),
     },
     openGraph: {
       title: `${product.name[lang]} · ${brand.name}`,
@@ -45,6 +51,7 @@ export default async function ProductPage({
   const product = await getProductAsync(slug);
   if (!product) notFound();
   const variant = product.variants[0];
+  const pageUrl = `${siteBase()}/${locale}/product/${slug}`;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -55,6 +62,7 @@ export default async function ProductPage({
     brand: { "@type": "Brand", name: brand.name },
     offers: {
       "@type": "Offer",
+      url: pageUrl,
       priceCurrency: "EUR",
       price: ((variant?.price_cents ?? 0) / 100).toFixed(2),
       availability: product.for_sale

@@ -20,6 +20,19 @@ function preferLocale(header: string): Locale {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const host = request.headers.get("host")?.split(":")[0]?.toLowerCase() ?? "";
+
+  // Canonical host www + permanent redirects (avoids GSC "Seite mit Weiterleitung" soft 307 noise)
+  if (
+    host === "3d-druck-geschenke.de" ||
+    host === "personalisierte-3d-geschenke.de" ||
+    host === "www.personalisierte-3d-geschenke.de"
+  ) {
+    const url = request.nextUrl.clone();
+    url.protocol = "https:";
+    url.host = "www.3d-druck-geschenke.de";
+    return NextResponse.redirect(url, 308);
+  }
 
   // Auth + API + static — no locale redirect
   if (
@@ -62,7 +75,8 @@ export async function middleware(request: NextRequest) {
   const locale = preferLocale(request.headers.get("accept-language") ?? "");
   const url = request.nextUrl.clone();
   url.pathname = `/${locale}${pathname === "/" ? "" : pathname}`;
-  return NextResponse.redirect(url);
+  // 308 permanent — root and bare paths always resolve to a locale URL
+  return NextResponse.redirect(url, 308);
 }
 
 export const config = {

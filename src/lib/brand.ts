@@ -36,7 +36,7 @@ export const brand = {
   },
   assistantName: process.env.NEXT_PUBLIC_ASSISTANT_NAME ?? "Geschenk-Assistent",
   domainPlaceholder:
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://3d-druck-geschenke.de",
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.3d-druck-geschenke.de",
   supportEmail:
     process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@3d-druck-geschenke.de",
   ordersEmail:
